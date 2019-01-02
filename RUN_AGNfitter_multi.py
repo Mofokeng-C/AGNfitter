@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 """%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
@@ -27,7 +27,7 @@ import time
 import shelve
 import multiprocessing as mp 
 import itertools
-import cPickle
+import pickle
 import argparse
 
 #AGNfitter IMPORTS
@@ -41,24 +41,24 @@ from astropy import units as u
 
 
 def header():
-    print '              '
-    print '             XXXX'
-    print '___________ XXX _________________________________________________'
-    print '            XX      '
-    print '            X     '
-    print '            X                       AGNfitter                     '
-    print '         __ X __                    ---------                ' 
-    print '     /**\   |   /**\                                          '
-    print '... (*** =  o  = ***) ...........................................'                                
-    print '     \**/__ | __\**/                                     '
-    print '            X              Fitting SEDs of AGN and Galaxies  '
-    print '            X             in a MCMC Approach '
-    print '           xx              (Calistro Rivera et al. 2016)    '   
-    print '          xx               '            
-    print '_______ xxx______________________________________________________'
-    print '     xxxx'
-    print ''
-    return
+    print('              ')
+    print('             XXXX')
+    print('___________ XXX _________________________________________________')
+    print('            XX      ')
+    print('            X     ')
+    print('            X                       AGNfitter                     ')
+    print('         __ X __                    ---------                ') 
+    print('     /**\   |   /**\                                          ')
+    print('... (*** =  o  = ***) ...........................................')                                
+    print('     \**/__ | __\**/                                     ')
+    print('            X              Fitting SEDs of AGN and Galaxies  ')
+    print('            X             in a MCMC Approach ')
+    print('           xx              (Calistro Rivera et al. 2016)    ')   
+    print('          xx               ')            
+    print('_______ xxx______________________________________________________')
+    print('     xxxx')
+    print('')
+    #return
 
 
 def MAKE_model_dictionary(cat, filters, clobbermodel=False):
@@ -75,7 +75,7 @@ def MAKE_model_dictionary(cat, filters, clobbermodel=False):
     t0= time.time()
 
     if clobbermodel and os.path.lexists(cat['dict_path']):
-        print "removing model dictionary "+cat['dict_path']
+        print("removing model dictionary "+cat['dict_path'])
         os.system('rm -rf '+ cat['dict_path'])
         
     if not os.path.lexists(cat['dict_path']):
@@ -85,10 +85,12 @@ def MAKE_model_dictionary(cat, filters, clobbermodel=False):
         mydict = MODELSDICT(cat['dict_path'], cat['path'], filters)
         mydict.build()
         
-        print '_____________________________________________________'
-        print 'For this dictionary creation %.2g min elapsed'% ((time.time() - t0)/60.)
+        print('_____________________________________________________')
+        print('For this dictionary creation %.2g min elapsed'% ((time.time() - t0)/60.))
 
-    Modelsdict = cPickle.load(file(cat['dict_path'], 'rb'))
+    with open(cat['dict_path'], 'rb') as f:
+        Modelsdict = pickle.load(f, encoding="latin1")
+    #Modelsdict = pickle.load(file(cat['dict_path'], 'rb'))
     
     return Modelsdict
 
@@ -103,10 +105,10 @@ def RUN_AGNfitter_onesource_independent( line, data_obj, filtersz, clobbermodel=
 
     data = DATA(data_obj,line)
 
-    print ''
-    print 'Fitting sources from catalog: ', data.catalog 
-    print '- Sourceline: ', line
-    print '- Sourcename: ', data.name
+    print('')
+    print('Fitting sources from catalog: ', data.catalog) 
+    print('- Sourceline: ', line)
+    print('- Sourcename: ', data.name)
 
 
     ## 0. CONSTRUCT DICTIONARY for this redshift
@@ -123,15 +125,15 @@ def RUN_AGNfitter_onesource_independent( line, data_obj, filtersz, clobbermodel=
     # remove this source modelsdict if it already exists and we want to remove it
     if clobbermodel and os.path.lexists(dictz):
         os.system('rm -rf '+dictz)
-        print "removing source model dictionary "+dictz
+        print("removing source model dictionary "+dictz)
       
     if not os.path.lexists(dictz):
         zdict = MODELSDICT(dictz, cat['path'], filtersz)
         zdict.build()
-        print '_____________________________________________________'
-        print 'For this dictionary creation %.2g min elapsed'% ((time.time() - t0)/60.)
+        print('_____________________________________________________')
+        print('For this dictionary creation %.2g min elapsed'% ((time.time() - t0)/60.))
 
-    Modelsdictz = cPickle.load(file(dictz, 'rb')) 
+    Modelsdictz = pickle.load(file(dictz, 'rb')) 
 
     data.DICTS(filtersz, Modelsdictz)
 
@@ -145,11 +147,12 @@ def RUN_AGNfitter_onesource_independent( line, data_obj, filtersz, clobbermodel=
     PLOTandWRITE_AGNfitter.main(data,  P,  out)
 
 
-    print '_____________________________________________________'
-    print 'For this fit %.2g min elapsed'% ((time.time() - t1)/60.)
-    return
+    print('_____________________________________________________')
+    print('For this fit %.2g min elapsed'% ((time.time() - t1)/60.))
+    return 
 
 def RUN_AGNfitter_onesource( line, data_obj, modelsdict):
+          
     """
     Main function for fitting a single source in line 'line'.
     """
@@ -162,11 +165,11 @@ def RUN_AGNfitter_onesource( line, data_obj, modelsdict):
 
     P = parspace.Pdict (data)  # Dictionary with all parameter space especifications.
                                 # From PARAMETERSPACE_AGNfitter.py
-
-    print ''
-    print 'Fitting sources from catalog: ', data.catalog 
-    print '- Sourceline: ', line
-    print '- Sourcename: ', data.name
+        
+    print('')
+    print('Fitting sources from catalog: ', data.catalog) 
+    print('- Sourceline: ', line)
+    print('- Sourcename: ', data.name)
 
 
     t1= time.time()
@@ -175,9 +178,9 @@ def RUN_AGNfitter_onesource( line, data_obj, modelsdict):
     PLOTandWRITE_AGNfitter.main(data,  P,  out)
 
 
-    print '_____________________________________________________'
-    print 'For this fit %.2g min elapsed'% ((time.time() - t1)/60.)
-    return
+    print('_____________________________________________________')
+    print('For this fit %.2g min elapsed'% ((time.time() - t1)/60.))
+    ##return
 
     
 def multi_run_wrapper(args):
@@ -197,14 +200,14 @@ def RUN_AGNfitter_multiprocessing(processors, data_obj, modelsdict):
     
     nsources = data_obj.cat['nsources']
     
-    print "processing all {0:d} sources with {1:d} cpus".format(nsources, processors)
+    print("processing all {0:d} sources with {1:d} cpus".format(nsources, processors))
     
     pool = mp.Pool(processes = processors)
-    catalog_fitting = pool.map(multi_run_wrapper, itertools.izip(range(nsources), itertools.repeat(data_obj), itertools.repeat(modelsdict)))
+    catalog_fitting = pool.map(multi_run_wrapper, zip(range(nsources), itertools.repeat(data_obj), itertools.repeat(modelsdict)))
     pool.close()
     pool.join()
     ##WRITE ALL RESULST IN ONE TABLE
-    return
+    #return
 
 
 if __name__ == "__main__":
@@ -222,17 +225,17 @@ if __name__ == "__main__":
     
     args = parser.parse_args()
     
-    execfile(args.AGNfitterSettings)
+    exec(compile(open(args.AGNfitterSettings).read(), args.AGNfitterSettings, 'exec'))
     
     if args.overwrite:
-      clobbermodel = True
+        clobbermodel = True
     else:
-      clobbermodel = False
+        clobbermodel = False
     
     try:
-	cat = CATALOG_settings()
+        cat = CATALOG_settings()
     except NameError:
-        print "Something is wrong with your setting file"
+        print("Something is wrong with your setting file")
         sys.exit(1)
         
     filters= FILTERS_settings()
@@ -264,5 +267,5 @@ if __name__ == "__main__":
             RUN_AGNfitter_multiprocessing(args.ncpu, data_ALL, Modelsdict)
         
         
-    print '======= : ======='
-    print 'Process finished.'
+    print('======= : =======')
+    print('Process finished.')
